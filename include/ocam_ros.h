@@ -14,6 +14,7 @@ private:
 
   image_transport::ImageTransport it_;
   image_transport::Publisher image_pub_;
+  image_transport::Publisher mono_image_pub_;
   ros::Publisher image_info_pub_;
 
   int width_;
