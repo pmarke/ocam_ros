@@ -36,15 +36,6 @@ add_executable(ocam_ros
 )
 target_link_libraries(ocam_ros ${catkin_LIBRARIES} ${OpenCV_LIBS} udev v4l2 pthread)
 
-add_executable(ocam_withrobot
-        src/ocam.cpp
-        src/withrobot_camera.cpp
-        src/withrobot_utility.cpp
-        include/withrobot_camera.hpp
-        include/withrobot_utility.hpp
-)
-target_link_libraries(ocam_withrobot ${catkin_LIBRARIES} ${OpenCV_LIBS} udev v4l2 pthread)
-
 
 
 
