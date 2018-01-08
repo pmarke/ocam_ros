@@ -32,7 +32,6 @@ private:
   int fps_;
   std::string camera_info_url_;
   std::string device_path_;
-  std::string fourcc_format_;
   std::string image_topic_;
   std::string mono_image_topic_;
   std::string frame_id_;

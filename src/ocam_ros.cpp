@@ -14,7 +14,6 @@ oCam_ROS::oCam_ROS() :
   nh_private_.param<int>("width", width_, 640);
   nh_private_.param<int>("height", height_, 480);
   nh_private_.param<int>("fps", fps_, 80);
-  nh_private_.param<std::string>("format", fourcc_format_, "GREY");
   nh_private_.param<std::string>("image_topic", image_topic_, "camera/image_raw");
   nh_private_.param<std::string>("mono_image_topic", mono_image_topic_, "camera/image_mono");
   nh_private_.param<std::string>("frame_id", frame_id_, "ocam");
