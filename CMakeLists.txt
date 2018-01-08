@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   sensor_msgs
   image_transport
+  camera_info_manager
   cv_bridge
 )
 find_package(Threads)
@@ -18,7 +19,7 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -fms-extensions -O3 -Wl,--n
 
 catkin_package(
     INCLUDE_DIRS include
-    CATKIN_DEPENDS roscpp sensor_msgs geometry_msgs
+    CATKIN_DEPENDS roscpp sensor_msgs camera_info_manager image_transport cv_bridge
 )
 
 include_directories(include
@@ -27,14 +28,14 @@ include_directories(include
 )
 
 
-add_executable(ocam_ros
+add_executable(ocam_ros_node
         src/ocam_ros.cpp
         src/withrobot_camera.cpp
         src/withrobot_utility.cpp
         include/withrobot_camera.hpp
         include/withrobot_utility.hpp
 )
-target_link_libraries(ocam_ros ${catkin_LIBRARIES} ${OpenCV_LIBS} udev v4l2 pthread)
+target_link_libraries(ocam_ros_node ${catkin_LIBRARIES} ${OpenCV_LIBS} udev v4l2 pthread)
 
 
 
