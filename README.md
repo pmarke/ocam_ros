@@ -4,6 +4,7 @@ A ROS wrapper for the OCAM Global Shutter Camera
 
 ## Functionality
 - Display Image and publish to ROS network
+- Use the `~show_image` parameter to adjust brightness and exposure
 
 ## Supported Image Formats
 * USB 3.0
@@ -61,7 +62,7 @@ For setting parameters and topic remappings from a launch file, refer to the [Ro
 * `~mono_image_topic` (string, default: "camera/image_mono")
    - Greyscale image topic name
 * `~show_image` (bool, default: false)
-   - Whether or not show image stream in separate window
+   - Shows image and enables keyboard shortcuts to adjust image
 * `~rescale_camera_info` (bool, default: false)
    - Whether or not rescale the camera intrinsics
 
