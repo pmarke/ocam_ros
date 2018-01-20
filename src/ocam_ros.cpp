@@ -133,10 +133,20 @@ oCam_ROS::oCam_ROS() :
   cv::Mat colorImg(cv::Size(camFormat.width, camFormat.height), CV_8UC3);
   cv::Mat monoImg(cv::Size(camFormat.width, camFormat.height), CV_8UC1);
 
-  /* Create OpenCV window if needed */
+  /* Create OpenCV window if needed and display camera adjustment instructions*/
   if (show_image_)
   {
+    // OpenCV window
     cv::namedWindow(windowName.c_str(), CV_WINDOW_KEEPRATIO|CV_WINDOW_AUTOSIZE);
+
+    // camera adjustment instructions
+    std::cout << "\n<--------- oCam Adjustment -------->\n";
+    std::cout << "Quit adjustment and image view: q\n";
+    std::cout << "Decrease exposure: [\n";
+    std::cout << "Increase exposure: ]\n";
+    std::cout << "Decrease brightness: -\n";
+    std::cout << "Increase brightness: =\n";
+    std::cout << "<---------------------------------->\n\n";
   }
 
 
