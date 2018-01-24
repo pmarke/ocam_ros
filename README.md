@@ -4,7 +4,7 @@ A ROS wrapper for the OCAM Global Shutter Camera
 
 ## Functionality
 - Display Image and publish to ROS network
-- Use the `~show_image` parameter to adjust brightness and exposure
+- Use the `~show_image` parameter to adjust brightness and exposure on the fly
 
 ## Supported Image Formats
 * USB 3.0
@@ -65,6 +65,10 @@ For setting parameters and topic remappings from a launch file, refer to the [Ro
    - Shows image and enables keyboard shortcuts to adjust image
 * `~rescale_camera_info` (bool, default: false)
    - Whether or not rescale the camera intrinsics
+* `~brightness` (int, default: 64, min/max: 1/127)
+   - Adjusts image brightness
+* `~exposure` (int, default: 39, min/max: 1/625)
+   - Adjusts camera shutter speed
 
 ## Topics
 - `camera/image_raw`(sensor_msgs/Image)

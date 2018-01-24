@@ -110,8 +110,11 @@ oCam_ROS::oCam_ROS() :
    *  [1] "Exposure (Absolute)", Value(default [min, step, max]): 39 ( 39 [1, 1, 625] )
    *
    */
-  int brightness = camera.get_control("Gain");
-  int exposure = camera.get_control("Exposure (Absolute)");
+  int brightness, exposure;
+  if (!nh_private_.getParam("brightness", brightness))
+    brightness = camera.get_control("Gain");
+  if (!nh_private_.getParam("exposure", exposure))
+    exposure = camera.get_control("Exposure (Absolute)");
 
   camera.set_control("Gain", brightness);
   camera.set_control("Exposure (Absolute)", exposure);
