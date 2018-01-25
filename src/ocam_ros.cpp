@@ -19,6 +19,7 @@ oCam_ROS::oCam_ROS() :
   nh_private_.param<std::string>("frame_id", frame_id_, "ocam");
   nh_private_.param<bool>("show_image", show_image_, false);
   nh_private_.param<bool>("rescale_camera_info", rescale_camera_info_, false);
+  nh_private_.param<bool>("auto_exposure", auto_exposure_, true);
 
   /*
    * Initialize camera info manager
@@ -177,6 +178,26 @@ oCam_ROS::oCam_ROS() :
 	  cv::cvtColor(srcImg, colorImg, cv::COLOR_BayerGB2BGR);
     cv::cvtColor(colorImg, monoImg, cv::COLOR_BGR2GRAY);
 
+    /* Automatically adjust exposure */
+    if (auto_exposure_)
+    {
+      // secant method for finding exposure at target intensity
+      static float intensity_min = 0;
+      static float exposure_min = 1;
+      static float target_intensity = 128; // 8 bit image is 0-255
+      float intensity = cv::mean(monoImg).val[0]; // mean intensity
+      float exposure_new = ((exposure - exposure_min)*(target_intensity - intensity_min))/(intensity - intensity_min) + exposure_min;
+
+      // saturate exposure at its limits
+      if (exposure_new > 625)
+        exposure_new = 625;
+      if (exposure_new < 1)
+        exposure_new = 1;
+
+      // set the new exposure
+      camera.set_control("Exposure (Absolute)", int(exposure_new));
+    }
+
     /* Build ROS image messages */
     sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", colorImg).toImageMsg();
     sensor_msgs::ImagePtr mono_msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", monoImg).toImageMsg();
@@ -237,26 +258,38 @@ oCam_ROS::oCam_ROS() :
 
       	/* When press the '[' key then decrease the exposure time. */
       	case '[':
-      		exposure = camera.get_control("Exposure (Absolute)");
-      		camera.set_control("Exposure (Absolute)", --exposure);
+          if (exposure > 1)
+          {
+      		  camera.set_control("Exposure (Absolute)", --exposure);
+            std::cout << "oCam exposure: " << exposure << "\n";
+          }
       		break;
 
   		  /* When press the ']' key then increase the exposure time. */
       	case ']':
-      		exposure = camera.get_control("Exposure (Absolute)");
-      		camera.set_control("Exposure (Absolute)", ++exposure);
+          if (exposure < 625)
+          {
+      		  camera.set_control("Exposure (Absolute)", ++exposure);
+            std::cout << "oCam exposure: " << exposure << "\n";
+          }
       		break;
 
   		  /* When press the '-' key then decrease the brightness. */
       	case '-':
-      		exposure = camera.get_control("Gain");
-      		camera.set_control("Gain", --brightness);
+      		if (brightness > 0)
+          {
+      		  camera.set_control("Gain", --brightness);
+            std::cout << "oCam brightness: " << brightness << "\n";
+          }
       		break;
 
   		  /* When press the '=' key then increase the brightness. */
       	case '=':
-      		exposure = camera.get_control("Gain");
-      		camera.set_control("Gain", ++brightness);
+      		if (brightness < 127)
+          {
+      		  camera.set_control("Gain", ++brightness);
+            std::cout << "oCam brightness: " << brightness << "\n";
+          }
       		break;
 
       	default:

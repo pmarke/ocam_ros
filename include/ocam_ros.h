@@ -37,6 +37,7 @@ private:
   std::string frame_id_;
   bool show_image_;
   bool rescale_camera_info_;
+  bool auto_exposure_;
 
   void rescaleCameraInfo(int width, int height);
 };

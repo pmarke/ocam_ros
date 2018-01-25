@@ -69,6 +69,8 @@ For setting parameters and topic remappings from a launch file, refer to the [Ro
    - Adjusts image brightness
 * `~exposure` (int, default: 39, min/max: 1/625)
    - Adjusts camera shutter speed
+* `~auto_exposure` (bool, default: true)
+   - Whether or not to automatically adjust exposure
 
 ## Topics
 - `camera/image_raw`(sensor_msgs/Image)
