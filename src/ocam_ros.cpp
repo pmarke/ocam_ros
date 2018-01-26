@@ -182,20 +182,24 @@ oCam_ROS::oCam_ROS() :
     if (auto_exposure_)
     {
       // secant method for finding exposure at target intensity
-      static float intensity_min = 0;
+      static float intensity_min = 18;
       static float exposure_min = 1;
       static float target_intensity = 128; // 8 bit image is 0-255
       float intensity = cv::mean(monoImg).val[0]; // mean intensity
       float exposure_new = ((exposure - exposure_min)*(target_intensity - intensity_min))/(intensity - intensity_min) + exposure_min;
 
+      // LPF the exposure to prevent large jumps inducing oscillations
+      static float alpha = 0.9;
+      exposure = int(alpha*exposure + (1-alpha)*exposure_new);
+
       // saturate exposure at its limits
-      if (exposure_new > 625)
-        exposure_new = 625;
-      if (exposure_new < 1)
-        exposure_new = 1;
+      if (exposure > 625)
+        exposure = 625;
+      if (exposure < 1)
+        exposure = 1;
 
       // set the new exposure
-      camera.set_control("Exposure (Absolute)", int(exposure_new));
+      camera.set_control("Exposure (Absolute)", exposure);
     }
 
     /* Build ROS image messages */
