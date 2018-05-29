@@ -155,7 +155,7 @@ oCam_ROS::oCam_ROS() :
     }
     
     /* Automatically adjust exposure */
-    if (auto_exposure_ && (++auto_exposure_count_ % 4) == 0)
+    if (auto_exposure_ && (++auto_exposure_count_ % (fps_/10)) == 0)
     {
       auto_exposure_count_ = 0;
       // secant method for finding exposure at target intensity
