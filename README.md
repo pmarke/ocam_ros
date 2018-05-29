@@ -57,9 +57,9 @@ For setting parameters and topic remappings from a launch file, refer to the [Ro
    - Image height in pixels
 * `~fps` (int, default: 80)
    - Camera frame rate
-* `~image_topic` (string, default: "camera/image_raw")
+* `~image_topic` (string, default: "image_raw")
    - Color image topic name
-* `~mono_image_topic` (string, default: "camera/image_mono")
+* `~mono_image_topic` (string, default: "image_mono")
    - Greyscale image topic name
 * `~show_image` (bool, default: false)
    - Shows image and enables keyboard shortcuts to adjust image
