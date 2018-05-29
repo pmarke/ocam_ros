@@ -86,7 +86,7 @@ Camera::Camera(const char* dev_name, struct camera_format* conf, const char* for
 
     get_current_format(config);
     if (conf != 0) {
-    	get_current_format(*conf);
+        get_current_format(*conf);
     }
 }
 
@@ -110,14 +110,14 @@ Camera::~Camera()
  * 연결한 장치의 시리얼번호를 읽어온다.
  */
 std::string Camera::get_serial_number() {
-	std::vector<usb_device_info> info_list;
-	int num = get_usb_device_info_list(info_list);
-	for (int i=0; i < num; i++) {
-		if (strcmp(info_list[i].dev_node.c_str(), dev_name.c_str()) == 0) {
-			return info_list[i].serial;
-		}
-	}
-	return "";
+    std::vector<usb_device_info> info_list;
+    int num = get_usb_device_info_list(info_list);
+    for (int i=0; i < num; i++) {
+        if (strcmp(info_list[i].dev_node.c_str(), dev_name.c_str()) == 0) {
+            return info_list[i].serial;
+        }
+    }
+    return "";
 }
 
 
@@ -126,19 +126,19 @@ std::string Camera::get_serial_number() {
  */
 void Camera::get_configurations(std::vector<std::string>& formats, std::vector<std::string>& controls)
 {
-	formats.clear();
-	DBG_PRINTF("Supported formats:");
-	for (auto it = valid_ratio_list.begin(); it != valid_ratio_list.end(); ++it) {
-		formats.push_back(it->first);
-		DBG_PRINTF("\"%s\"", it->first.c_str());
-	}
+    formats.clear();
+    DBG_PRINTF("Supported formats:");
+    for (auto it = valid_ratio_list.begin(); it != valid_ratio_list.end(); ++it) {
+        formats.push_back(it->first);
+        DBG_PRINTF("\"%s\"", it->first.c_str());
+    }
 
-	controls.clear();
-	DBG_PRINTF("Supported controls:");
-	for (auto it = valid_control_list.begin(); it != valid_control_list.end(); ++it) {
-		controls.push_back(it->first);
-		DBG_PRINTF("\"%s\"", it->first.c_str());
-	}
+    controls.clear();
+    DBG_PRINTF("Supported controls:");
+    for (auto it = valid_control_list.begin(); it != valid_control_list.end(); ++it) {
+        controls.push_back(it->first);
+        DBG_PRINTF("\"%s\"", it->first.c_str());
+    }
 }
 
 
@@ -653,7 +653,7 @@ bool Camera::get_control(camera_control& ctrl)
     memset(&ctrl, 0, sizeof(camera_control));
 
     //strcpy(ctrl.name, (const char*)v4l2_s.queryctrl.name);
-    ctrl.name 			= (const char*)v4l2_s.queryctrl.name;
+    ctrl.name           = (const char*)v4l2_s.queryctrl.name;
     ctrl.id             = v4l2_s.queryctrl.id;
     ctrl.step           = v4l2_s.queryctrl.step;
     ctrl.type           = v4l2_s.queryctrl.type;
@@ -685,21 +685,21 @@ bool Camera::get_control(camera_control& ctrl)
 
 /**
  * 장치의 현재 제어값을 가져오는 함수
- * @param name		[입력] 제어 이름 문자열
- * @return			[출력] 현재 값 (정수), 실패 또는 오류시 -1
+ * @param name      [입력] 제어 이름 문자열
+ * @return          [출력] 현재 값 (정수), 실패 또는 오류시 -1
  */
 int Camera::get_control(const char* name)
 {
-	camera_control ctrl;
-	ctrl.name = name;
-	bool res = get_control(ctrl);
-	if (res) {
-		return ctrl.value;
-	}
-	else {
-		printf("Invalid control name: %s\n", name);
-		return -1;
-	}
+    camera_control ctrl;
+    ctrl.name = name;
+    bool res = get_control(ctrl);
+    if (res) {
+        return ctrl.value;
+    }
+    else {
+        printf("Invalid control name: %s\n", name);
+        return -1;
+    }
 }
 
 /**
@@ -936,3 +936,4 @@ int Camera::query_ioctl(int current_ctrl, struct v4l2_queryctrl* ctrl)
 
     return(ret);
 }
+

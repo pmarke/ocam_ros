@@ -38,8 +38,6 @@
 #include <sstream>
 #include <stdio.h>
 
-#include <ros/ros.h>
-
 #include "withrobot_utility.hpp"
 
 #define WITHROBOT_CAMERA_DEFAULT_WIDTH     640
@@ -49,7 +47,7 @@
 /*
  * DBG print
  */
-//#define PRINT_DEBUG_MSG	/* When you want to show the debug messages remove the comment here. */
+//#define PRINT_DEBUG_MSG   /* When you want to show the debug messages remove the comment here. */
 
 #ifdef PRINT_DEBUG_MSG
 #define DBG_PRINTF(...) {\
@@ -140,9 +138,9 @@ namespace Withrobot {
         void clear() { memset(this, 0, sizeof(*this)); }
 
         void print() {
-            ROS_INFO("Pixel format: %c, %c, %c, %c", (pixformat >> 0) & 0xFF, (pixformat >> 8) & 0xFF, (pixformat >> 16) & 0xff, (pixformat >> 24) & 0xFF);
-            ROS_INFO("Width: %d, Height: %d, Image size: %d", width, height, image_size);
-            ROS_INFO("Frame Rate : %d / %d (%.2f fps)", rate_numerator, rate_denominator, frame_rate);
+            printf("Pixel format: %c, %c, %c, %c\n", (pixformat >> 0) & 0xFF, (pixformat >> 8) & 0xFF, (pixformat >> 16) & 0xff, (pixformat >> 24) & 0xFF);
+            printf("Width: %d, Height: %d, Image size: %d\n", width, height, image_size);
+            printf("Frame Rate : %d / %d (%.2f fps)\n", rate_numerator, rate_denominator, frame_rate);
         }
 
         void dbg_print() {
@@ -212,23 +210,23 @@ namespace Withrobot {
          * [ supported image formats ]
          *
          * USB 3.0
-         * 	[1] "8-bit Greyscale 1280 x 720 60 fps"
-    	 *	[2] "8-bit Greyscale 1280 x 960 45 fps"
-    	 *	[3] "8-bit Greyscale 320 x 240 160 fps"
-    	 * 	[4] "8-bit Greyscale 640 x 480 80 fps"
-    	 *
-    	 * USB 2.0
-         * 	[1] "8-bit Greyscale 1280 x 720 30 fps"
-    	 *	[2] "8-bit Greyscale 1280 x 960 22.5 fps"
-    	 *	[3] "8-bit Greyscale 320 x 240 160 fps"
-    	 * 	[4] "8-bit Greyscale 640 x 480 80 fps"
-    	 *
-    	 *
-		 * [ supported camera controls; The double quotes are the 'get_control' and the 'set_control' function string argument values. ]
-		 *
-		 *  [1] "Exposure (Absolute)", Value(default [min, step, max]): 39 ( 39 [1, 1, 625] )
-		 *  [2] "Brightness",          Value(default [min, step, max]): 64 ( 64 [0, 1, 127] )  // gain
-		 *
+         *  [1] "8-bit Greyscale 1280 x 720 60 fps"
+         *  [2] "8-bit Greyscale 1280 x 960 45 fps"
+         *  [3] "8-bit Greyscale 320 x 240 160 fps"
+         *  [4] "8-bit Greyscale 640 x 480 80 fps"
+         *
+         * USB 2.0
+         *  [1] "8-bit Greyscale 1280 x 720 30 fps"
+         *  [2] "8-bit Greyscale 1280 x 960 22.5 fps"
+         *  [3] "8-bit Greyscale 320 x 240 160 fps"
+         *  [4] "8-bit Greyscale 640 x 480 80 fps"
+         *
+         *
+         * [ supported camera controls; The double quotes are the 'get_control' and the 'set_control' function string argument values. ]
+         *
+         *  [1] "Exposure (Absolute)", Value(default [min, step, max]): 39 ( 39 [1, 1, 625] )
+         *  [2] "Brightness",          Value(default [min, step, max]): 64 ( 64 [0, 1, 127] )  // gain
+         *
          */
         Camera(const char* dev_name, struct camera_format* conf=0, const char* format_string=0, const unsigned char disable_libv4l2=0);
         ~Camera();

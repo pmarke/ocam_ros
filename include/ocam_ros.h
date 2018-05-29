@@ -22,7 +22,6 @@ private:
 
   image_transport::ImageTransport it_;
   image_transport::CameraPublisher image_pub_;
-  image_transport::Publisher mono_image_pub_;
 
   sensor_msgs::CameraInfo info_;
   camera_info_manager::CameraInfoManager info_manager_;
@@ -33,11 +32,12 @@ private:
   std::string camera_info_url_;
   std::string device_path_;
   std::string image_topic_;
-  std::string mono_image_topic_;
   std::string frame_id_;
   bool show_image_;
   bool rescale_camera_info_;
   bool auto_exposure_;
+  bool color_;
+  int auto_exposure_count_ = 0;
 
   void rescaleCameraInfo(int width, int height);
 };
