@@ -57,12 +57,12 @@ For setting parameters and topic remappings from a launch file, refer to the [Ro
    - Image height in pixels
 * `~fps` (int, default: 80)
    - Camera frame rate
-* `~image_topic` (string, default: "image_raw")
-   - Color image topic name
-* `~mono_image_topic` (string, default: "image_mono")
-   - Greyscale image topic name
+* `~color` (bool, default: false)
+   - Publish a color image (only if using 1CGN-U)
+* `~image_topic` (string, default: "image")
+   - Image topic name
 * `~show_image` (bool, default: false)
-   - Shows image and enables keyboard shortcuts to adjust image
+   - Shows image and enables keyboard shortcuts to adjust image brightness and exposure
 * `~rescale_camera_info` (bool, default: false)
    - Whether or not rescale the camera intrinsics
 * `~brightness` (int, default: 64, min/max: 1/127)
@@ -73,10 +73,8 @@ For setting parameters and topic remappings from a launch file, refer to the [Ro
    - Whether or not to automatically adjust exposure
 
 ## Topics
-- `camera/image_raw`(sensor_msgs/Image)
-    - Color image measurements from oCam
-- `camera/image_mono`(sensor_msgs/Image)
-    - Greyscale image measurements from oCam
+- `camera/image`(sensor_msgs/Image)
+    - Image measurements from oCam
 
 ## ToDo
 - Finish documentation
