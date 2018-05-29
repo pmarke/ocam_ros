@@ -2,21 +2,23 @@
 
 A ROS wrapper for the OCAM Global Shutter Camera
 
+This is basically a ROS wrapper around the withrobot (opencv examples)[http://withrobot.com/en/camera/ocam-1cgn-u/?ckattempt=1]. It has been tested primarily with the 1CGN-U color global shutter camera, but will likely work with the mono version 1MGN-U
+
 ## Functionality
 - Display Image and publish to ROS network
-- Use the `~show_image` parameter to adjust brightness and exposure on the fly
+- Use the `~show_image` parameter to adjust brightness and exposure on the fly with keyboard shortcuts (similar to oCam linux examples).
 
 ## Supported Image Formats
 * USB 3.0
-  * 8-bit Greyscale 1280 x 720 @ 60 fps
   * 8-bit Greyscale 1280 x 960 @ 45 fps
-  * 8-bit Greyscale 320 x 240 @ 160 fps
+  * 8-bit Greyscale 1280 x 720 @ 60 fps
   * 8-bit Greyscale 640 x 480 @ 80 fps
+  * 8-bit Greyscale 320 x 240 @ 160 fps
 * USB 2.0
-  * 8-bit Greyscale 1280 x 720 @ 30 fps
   * 8-bit Greyscale 1280 x 960 @ 22.5 fps
-  * 8-bit Greyscale 320 x 240 @ 160 fps
+  * 8-bit Greyscale 1280 x 720 @ 30 fps
   * 8-bit Greyscale 640 x 480 @ 80 fps
+  * 8-bit Greyscale 320 x 240 @ 160 fps
 
 ## Installation
 Install dependencies:
