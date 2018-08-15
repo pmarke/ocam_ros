@@ -31,7 +31,7 @@ Compile the ROS package:
 mkdir -p catkin_ws/src
 cd catkin_ws/src
 catkin_init_workspace
-git clone https://superjax/ocam_ros
+git clone https://github.com/superjax/ocam_ros
 cd ..
 catkin_make
 ```
