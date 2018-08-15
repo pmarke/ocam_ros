@@ -2,7 +2,7 @@
 
 A ROS wrapper for the OCAM Global Shutter Camera
 
-This is basically a ROS wrapper around the withrobot (opencv examples)[http://withrobot.com/en/camera/ocam-1cgn-u/?ckattempt=1]. It has been tested primarily with the 1CGN-U color global shutter camera, but will likely work with the mono version 1MGN-U
+This is basically a ROS wrapper around the withrobot [opencv examples](http://withrobot.com/en/camera/ocam-1cgn-u/?ckattempt=1). It has been tested primarily with the 1CGN-U color global shutter camera, but will likely work with the mono version 1MGN-U
 
 ## Functionality
 - Display Image and publish to ROS network
