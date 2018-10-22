@@ -55,7 +55,7 @@ oCam_ROS::oCam_ROS() :
    * Print information
    */
   std::string camName = camera.get_dev_name();
-  std::string camSerialNumber = camera.get_serial_number();
+  std::string camSerialNumber = camera.get_dev_name();
   
   printf("port: %s, dev: %s, serial number: %s\n", device_path_.c_str(), camName.c_str(), camSerialNumber.c_str());
   printf("----------------- Current format information ------------------\n");
@@ -70,10 +70,10 @@ oCam_ROS::oCam_ROS() :
    *
    */
   int brightness, exposure;
-  if (!nh_private_.getParam("brightness", brightness))
-    brightness = camera.get_control("Gain");
-  if (!nh_private_.getParam("exposure", exposure))
-    exposure = camera.get_control("Exposure (Absolute)");
+//  if (!nh_private_.getParam("brightness", brightness))
+//    brightness = camera.get_control("Gain");
+//  if (!nh_private_.getParam("exposure", exposure))
+//    exposure = camera.get_control("Exposure (Absolute)");
   
   camera.set_control("Gain", brightness);
   camera.set_control("Exposure (Absolute)", exposure);
@@ -99,7 +99,7 @@ oCam_ROS::oCam_ROS() :
   if (show_image_)
   {
     // OpenCV window
-    cv::namedWindow(windowName.c_str(), CV_WINDOW_KEEPRATIO|CV_WINDOW_AUTOSIZE);
+    cv::namedWindow(windowName.c_str());
     
     // camera adjustment instructions
     std::cout << "\n<--------- oCam Adjustment -------->\n";

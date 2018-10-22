@@ -2,7 +2,7 @@
 #                                                                               #
 # Withrobot Camera API                                                          #
 #                                                                               #
-# Copyright (C) 2016 Withrobot. Inc.                                            #
+# Copyright (C) 2015 Withrobot. Inc.                                            #
 #                                                                               #
 # This program is free software: you can redistribute it and/or modify          #
 # it under the terms of the GNU General Public License as published by          #
@@ -37,35 +37,13 @@
 #include <map>
 #include <sstream>
 #include <stdio.h>
+#include <ros/ros.h>
 
 #include "withrobot_utility.hpp"
 
 #define WITHROBOT_CAMERA_DEFAULT_WIDTH     640
 #define WITHROBOT_CAMERA_DEFAULT_HEIGHT    480
 #define WITHROBOT_CAMERA_DEFAULT_FIXFORMAT V4L2_PIX_FMT_YUYV
-
-/*
- * DBG print
- */
-//#define PRINT_DEBUG_MSG   /* When you want to show the debug messages remove the comment here. */
-
-#ifdef PRINT_DEBUG_MSG
-#define DBG_PRINTF(...) {\
-    fprintf(stdout, "DBG: [%s, %d, %s] ", __FILE__, __LINE__, __FUNCTION__); \
-    fprintf(stdout, __VA_ARGS__); fprintf(stdout, "\n"); fflush(stdout); \
-}
-
-#define DBG_PRINTF_MSG(...) { fprintf(stdout, __VA_ARGS__); fflush(stdout); }
-#define DBG_PERROR(...) { fflush(stdout); printf("DBG_ERR: [%s, %d, %s] ", __FILE__, __LINE__, __func__); fflush(stdout); perror(__VA_ARGS__); fflush(stdout); }
-
-#else
-#define DBG_PRINTF(...)
-#define DBG_PRINTF_MSG(...)
-#define DBG_PERROR(...)
-
-#endif /* PRINT_DEBUG_MSG */
-
-
 
 /**
  * @defgroup Withrobot Camera API
@@ -138,15 +116,9 @@ namespace Withrobot {
         void clear() { memset(this, 0, sizeof(*this)); }
 
         void print() {
-            printf("Pixel format: %c, %c, %c, %c\n", (pixformat >> 0) & 0xFF, (pixformat >> 8) & 0xFF, (pixformat >> 16) & 0xff, (pixformat >> 24) & 0xFF);
-            printf("Width: %d, Height: %d, Image size: %d\n", width, height, image_size);
-            printf("Frame Rate : %d / %d (%.2f fps)\n", rate_numerator, rate_denominator, frame_rate);
-        }
-
-        void dbg_print() {
-            DBG_PRINTF("Pixel format: %c, %c, %c, %c", (pixformat >> 0) & 0xFF, (pixformat >> 8) & 0xFF, (pixformat >> 16) & 0xff, (pixformat >> 24) & 0xFF);
-            DBG_PRINTF("Width: %d, Height: %d, Image size: %d", width, height, image_size);
-            DBG_PRINTF("Frame Rate : %d / %d (%.2f fps)", rate_numerator, rate_denominator, frame_rate);
+            ROS_INFO("Pixel format: %c, %c, %c, %c", (pixformat >> 0) & 0xFF, (pixformat >> 8) & 0xFF, (pixformat >> 16) & 0xff, (pixformat >> 24) & 0xFF);
+            ROS_INFO("Width: %d, Height: %d, Image size: %d", width, height, image_size);
+            ROS_INFO("Frame Rate : %d / %d (%.2f fps)", rate_numerator, rate_denominator, frame_rate);
         }
     };
 
@@ -162,7 +134,7 @@ namespace Withrobot {
         void clear() { memset(this, 0, sizeof(*this)); }
 
         void dbg_print() {
-            DBG_PRINTF("Index: %d, Name: %s, Value: %d", index, name, value);
+            ROS_DEBUG("Index: %d, Name: %s, Value: %d", index, name, value);
         }
     };
 
@@ -171,8 +143,7 @@ namespace Withrobot {
      */
     struct camera_control {
         unsigned int id;
-        //char name[256];
-        std::string name;
+        char name[256];
         int value;
         int default_value;
         unsigned int type;
@@ -188,10 +159,10 @@ namespace Withrobot {
         void clear() { memset(this, 0, sizeof(*this)); }
 
         void dbg_print() {
-            DBG_PRINTF("Id: %u, Name: %s, Value(default [min, step, max]): %d ( %d [%d, %d, %d] ), Type: %d, Flag: %d",
-                       id, name.c_str(), value, default_value, minimum, step, maximum, type, flags);
+            ROS_DEBUG("Id: %u, Name: %s, Value(default [min, step, max]): %d ( %d [%d, %d, %d] ), Type: %d, Flag: %d",
+                       id, name, value, default_value, minimum, step, maximum, type, flags);
             for (unsigned int i=0; i < menu_list.size(); i++) {
-                DBG_PRINTF("Menu %d", i);
+                ROS_DEBUG("Menu %d", i);
                 menu_list[i].dbg_print();
             }
         }
@@ -204,53 +175,26 @@ namespace Withrobot {
     class Camera
     {
     public:
-        /*
-         * oCam-1MGN
-         *
-         * [ supported image formats ]
-         *
-         * USB 3.0
-         *  [1] "8-bit Greyscale 1280 x 720 60 fps"
-         *  [2] "8-bit Greyscale 1280 x 960 45 fps"
-         *  [3] "8-bit Greyscale 320 x 240 160 fps"
-         *  [4] "8-bit Greyscale 640 x 480 80 fps"
-         *
-         * USB 2.0
-         *  [1] "8-bit Greyscale 1280 x 720 30 fps"
-         *  [2] "8-bit Greyscale 1280 x 960 22.5 fps"
-         *  [3] "8-bit Greyscale 320 x 240 160 fps"
-         *  [4] "8-bit Greyscale 640 x 480 80 fps"
-         *
-         *
-         * [ supported camera controls; The double quotes are the 'get_control' and the 'set_control' function string argument values. ]
-         *
-         *  [1] "Exposure (Absolute)", Value(default [min, step, max]): 39 ( 39 [1, 1, 625] )
-         *  [2] "Brightness",          Value(default [min, step, max]): 64 ( 64 [0, 1, 127] )  // gain
-         *
-         */
         Camera(const char* dev_name, struct camera_format* conf=0, const char* format_string=0, const unsigned char disable_libv4l2=0);
         ~Camera();
 
         bool start();
         bool stop();
 
-        void get_configurations(std::vector<std::string>& formats, std::vector<std::string>& controls);
-        bool get_current_format(camera_format& fmt);
-
         int get_frame(unsigned char* out_buffer, const unsigned int size, unsigned int timeout_sec=1);
+        int get_valid_image_format_list(std::vector<const char*>& list);
+        int get_valid_resolution_list(const char* format_description, std::vector<const char*>& list);
+        int get_valid_ratio_list(const char* resolution_description, std::vector<const char*>& list);
+
+        bool get_current_format(camera_format& fmt);
 
         bool set_format(const char* format_description);
         bool set_format(unsigned int width, unsigned int height, unsigned int pixelformat, unsigned int rate_numerator=0, unsigned int rate_denomonator=0);
 
-        bool get_control(camera_control& ctrl);
-        int get_control(const char* name);
-
-        bool set_control(const char* name, const int value);
-
         int valid_controls(std::vector<std::pair<const char*, unsigned int> >& list);
-        int get_valid_image_format_list(std::vector<const char*>& list);
-        int get_valid_resolution_list(const char* format_description, std::vector<const char*>& list);
-        int get_valid_ratio_list(const char* resolution_description, std::vector<const char*>& list);
+
+        bool get_control(camera_control& ctrl);
+        bool set_control(const char* name, const int value);
 
         /**
          * 동작중(streaming) 여부 확인 함수
@@ -263,7 +207,6 @@ namespace Withrobot {
          * @return device name
          */
         inline std::string get_dev_name() { return std::string((const char*) v4l2_s.capability.card); }
-        std::string get_serial_number();
 
     private:
         struct _buffer {
@@ -290,7 +233,7 @@ namespace Withrobot {
         };
 
     private:
-        std::string dev_name;
+        const char* dev_name;
 
         int fd;
 

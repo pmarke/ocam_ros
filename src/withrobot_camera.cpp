@@ -2,7 +2,7 @@
 #                                                                               #
 # Withrobot Camera API                                                          #
 #                                                                               #
-# Copyright (C) 2016 Withrobot. Inc.                                            #
+# Copyright (C) 2015 Withrobot. Inc.                                            #
 #                                                                               #
 # This program is free software: you can redistribute it and/or modify          #
 # it under the terms of the GNU General Public License as published by          #
@@ -27,7 +27,6 @@
 
 #include "withrobot_camera.hpp"
 
-
 using namespace Withrobot;
 
 #define WITHROBOT_CAMERA_IOCTL_RETRY     5
@@ -46,11 +45,11 @@ Camera::Camera(const char* dev_name, struct camera_format* conf, const char* for
     /* open device */
     fd = open(dev_name, O_RDWR | O_NONBLOCK, 0);
     if (fd == -1) {
-        DBG_PERROR("Opening video device");
+        ROS_ERROR("Opening video device");
         exit(EXIT_FAILURE);
     }
     else {
-        DBG_PRINTF("Device \"%s\" is opened.", dev_name);
+        ROS_DEBUG("Device \"%s\" is opened.", dev_name);
     }
 
     /*
@@ -77,7 +76,7 @@ Camera::Camera(const char* dev_name, struct camera_format* conf, const char* for
     get_current_format(config);
 
     /* format */
-    if (format_string != 0) {
+    if (strlen(format_string)) {
         set_format(format_string);
     }
     else {
@@ -85,9 +84,7 @@ Camera::Camera(const char* dev_name, struct camera_format* conf, const char* for
     }
 
     get_current_format(config);
-    if (conf != 0) {
-        get_current_format(*conf);
-    }
+    get_current_format(*conf);
 }
 
 
@@ -102,45 +99,9 @@ Camera::~Camera()
     /* close device */
     if (fd > 0) {
         close(fd);
-        DBG_PRINTF("Device \"%s\" is closed.", dev_name.c_str());
+        ROS_DEBUG("Device \"%s\" is closed.", dev_name);
     }
 }
-
-/**
- * 연결한 장치의 시리얼번호를 읽어온다.
- */
-std::string Camera::get_serial_number() {
-    std::vector<usb_device_info> info_list;
-    int num = get_usb_device_info_list(info_list);
-    for (int i=0; i < num; i++) {
-        if (strcmp(info_list[i].dev_node.c_str(), dev_name.c_str()) == 0) {
-            return info_list[i].serial;
-        }
-    }
-    return "";
-}
-
-
-/**
- * 연결한 카메라가 지원하는 모든 포멧과 컨트롤 이름을 읽어온다.
- */
-void Camera::get_configurations(std::vector<std::string>& formats, std::vector<std::string>& controls)
-{
-    formats.clear();
-    DBG_PRINTF("Supported formats:");
-    for (auto it = valid_ratio_list.begin(); it != valid_ratio_list.end(); ++it) {
-        formats.push_back(it->first);
-        DBG_PRINTF("\"%s\"", it->first.c_str());
-    }
-
-    controls.clear();
-    DBG_PRINTF("Supported controls:");
-    for (auto it = valid_control_list.begin(); it != valid_control_list.end(); ++it) {
-        controls.push_back(it->first);
-        DBG_PRINTF("\"%s\"", it->first.c_str());
-    }
-}
-
 
 /**
  * PC 메모리에 마련된 버퍼를 해제
@@ -170,17 +131,17 @@ bool Camera::get_capability()
 {
     memset(&v4l2_s.capability, 0, sizeof(v4l2_s.capability));
     if (xioctl(VIDIOC_QUERYCAP, &v4l2_s.capability) == -1) {
-        DBG_PERROR("VIDIOC_QUERYCAP");
+        ROS_ERROR("VIDIOC_QUERYCAP");
         return false;
     }
 
-    DBG_PRINTF("---- Device capabilities ----");
-    DBG_PRINTF("Name: %s", (char*)v4l2_s.capability.card);
-    DBG_PRINTF("kernel version: %u.%u.%u", (v4l2_s.capability.version >> 16) & 0xFF, (v4l2_s.capability.version >> 8) & 0xFF, v4l2_s.capability.version & 0xFF);
-    DBG_PRINTF("Driver: %s", (char*)v4l2_s.capability.driver);
-    DBG_PRINTF("Bus: %s", (char*)v4l2_s.capability.bus_info);
-    DBG_PRINTF("V4L2_CAP_STREAMING : %s", (v4l2_s.capability.capabilities & V4L2_CAP_STREAMING) ? "True" : "False");
-    DBG_PRINTF("V4L2_CAP_VIDEO_CAPTURE : %s", (v4l2_s.capability.capabilities & V4L2_CAP_VIDEO_CAPTURE) ? "True" : "False");
+    ROS_DEBUG("---- Device capabilities ----");
+    ROS_DEBUG("Name: %s", (char*)v4l2_s.capability.card);
+    ROS_DEBUG("kernel version: %u.%u.%u", (v4l2_s.capability.version >> 16) & 0xFF, (v4l2_s.capability.version >> 8) & 0xFF, v4l2_s.capability.version & 0xFF);
+    ROS_DEBUG("Driver: %s", (char*)v4l2_s.capability.driver);
+    ROS_DEBUG("Bus: %s", (char*)v4l2_s.capability.bus_info);
+    ROS_DEBUG("V4L2_CAP_STREAMING : %s", (v4l2_s.capability.capabilities & V4L2_CAP_STREAMING) ? "True" : "False");
+    ROS_DEBUG("V4L2_CAP_VIDEO_CAPTURE : %s", (v4l2_s.capability.capabilities & V4L2_CAP_VIDEO_CAPTURE) ? "True" : "False");
 
     return true;
 }
@@ -191,12 +152,12 @@ bool Camera::get_capability()
 void Camera::check_essential_capability()
 {
     if (!(v4l2_s.capability.capabilities & V4L2_CAP_VIDEO_CAPTURE)) {
-        DBG_PERROR("V4L2_CAP_VIDEO_CAPTURE");
+        ROS_ERROR("V4L2_CAP_VIDEO_CAPTURE");
         exit(EXIT_FAILURE);
     }
 
     if (!(v4l2_s.capability.capabilities & V4L2_CAP_STREAMING)) {
-        DBG_PERROR("V4L2_CAP_STREAMING");
+        ROS_ERROR("V4L2_CAP_STREAMING");
         exit(EXIT_FAILURE);
     }
 }
@@ -212,7 +173,7 @@ bool Camera::set_buffer()
     v4l2_s.requestbuffers.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     v4l2_s.requestbuffers.memory = V4L2_MEMORY_MMAP;
     if (xioctl(VIDIOC_REQBUFS, &v4l2_s.requestbuffers) == -1) {
-        DBG_PERROR("request buffer");
+        ROS_ERROR("request buffer");
         return false;
     }
 
@@ -229,7 +190,7 @@ bool Camera::set_buffer()
         v4l2_s.buffer.index = i;
 
         if (xioctl(VIDIOC_QUERYBUF, &v4l2_s.buffer) == -1) {
-            DBG_PERROR("query buffer");
+            ROS_ERROR("query buffer");
             return false;
         }
 
@@ -241,7 +202,7 @@ bool Camera::set_buffer()
         buffers[i].buffer = (unsigned char*)mmap(NULL, v4l2_s.buffer.length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, v4l2_s.buffer.m.offset);
 
         if (buffers[i].buffer == MAP_FAILED) {
-            DBG_PERROR("memory mmap");
+            ROS_ERROR("memory mmap");
             return false;
         }
     }
@@ -262,11 +223,11 @@ bool Camera::enumerate_image_formats(const enum v4l2_buf_type buf_type)
 
     std::string desc;
 
-    DBG_PRINTF("---- Valid image formats ----");
+    ROS_DEBUG("---- Valid image formats ----");
     while (xioctl(VIDIOC_ENUM_FMT, &v4l2_s.fmtdesc) != -1) {
-        DBG_PRINTF("Index: %d", v4l2_s.fmtdesc.index);
-        DBG_PRINTF("Format description: %s", v4l2_s.fmtdesc.description);
-        DBG_PRINTF("Format pixel format: %c, %c, %c, %c", (v4l2_s.fmtdesc.pixelformat >> 0) & 0xFF, (v4l2_s.fmtdesc.pixelformat >> 8) & 0xFF, (v4l2_s.fmtdesc.pixelformat >> 16) & 0xff, (v4l2_s.fmtdesc.pixelformat >> 24) & 0xFF);
+        ROS_DEBUG("Index: %d", v4l2_s.fmtdesc.index);
+        ROS_DEBUG("Format description: %s", v4l2_s.fmtdesc.description);
+        ROS_DEBUG("Format pixel format: %c, %c, %c, %c", (v4l2_s.fmtdesc.pixelformat >> 0) & 0xFF, (v4l2_s.fmtdesc.pixelformat >> 8) & 0xFF, (v4l2_s.fmtdesc.pixelformat >> 16) & 0xff, (v4l2_s.fmtdesc.pixelformat >> 24) & 0xFF);
 
         desc.clear();
         desc = std::string((const char*)v4l2_s.fmtdesc.description);
@@ -294,13 +255,13 @@ bool Camera::enumerate_frame_sizes(const unsigned int pixelformat, std::string& 
 
     std::string desc;
 
-    DBG_PRINTF("---- Valid image sizes ----");
+    ROS_DEBUG("---- Valid image sizes ----");
     while (xioctl(VIDIOC_ENUM_FRAMESIZES, &v4l2_s.frmsizeenum) != -1) {
-        DBG_PRINTF("Index: %d", v4l2_s.frmsizeenum.index);
+        ROS_DEBUG("Index: %d", v4l2_s.frmsizeenum.index);
 
         switch (v4l2_s.frmsizeenum.type) {
         case V4L2_FRMSIZE_TYPE_DISCRETE:
-            DBG_PRINTF("Discrete :: Width: %d, Height: %d", v4l2_s.frmsizeenum.discrete.width, v4l2_s.frmsizeenum.discrete.height);
+            ROS_DEBUG("Discrete :: Width: %d, Height: %d", v4l2_s.frmsizeenum.discrete.width, v4l2_s.frmsizeenum.discrete.height);
 
             desc.clear();
             desc = description + (" " + Withrobot::to_string<int>(v4l2_s.frmsizeenum.discrete.width) + " x " + Withrobot::to_string<int>(v4l2_s.frmsizeenum.discrete.height));
@@ -312,17 +273,17 @@ bool Camera::enumerate_frame_sizes(const unsigned int pixelformat, std::string& 
             break;
 
         case V4L2_FRMSIZE_TYPE_STEPWISE:
-            DBG_PRINTF("Stepwise :: Width step(max/min): %d (%d / %d), Height step(max / min): %d (%d / %d)",
+            ROS_DEBUG("Stepwise :: Width step(max/min): %d (%d / %d), Height step(max / min): %d (%d / %d)",
                     v4l2_s.frmsizeenum.stepwise.step_width, v4l2_s.frmsizeenum.stepwise.max_width, v4l2_s.frmsizeenum.stepwise.min_width,
                     v4l2_s.frmsizeenum.stepwise.step_height, v4l2_s.frmsizeenum.stepwise.max_height, v4l2_s.frmsizeenum.stepwise.min_height);
             break;
 
         case V4L2_FRMSIZE_TYPE_CONTINUOUS:
-            DBG_PRINTF("Continuous")
+            ROS_DEBUG("Continuous");
             break;
 
         default:
-            DBG_PRINTF("ERROR: Invalid VIDIOC_ENUM_FRAMESIZES");
+            ROS_DEBUG("ERROR: Invalid VIDIOC_ENUM_FRAMESIZES");
             exit(EXIT_FAILURE);
         }
 
@@ -342,7 +303,7 @@ bool Camera::enumerate_frame_sizes(const unsigned int pixelformat, std::string& 
  */
 bool Camera::enumerate_frame_intervals(const unsigned int pixelformat, const unsigned int width, const unsigned int height, std::string& description)
 {
-    DBG_PRINTF("---- Valid frame intervals ----");
+    ROS_DEBUG("---- Valid frame intervals ----");
     memset(&v4l2_s.frmivalenum, 0, sizeof(v4l2_s.frmivalenum));
 
     v4l2_s.frmivalenum.index = 0;
@@ -364,22 +325,22 @@ bool Camera::enumerate_frame_intervals(const unsigned int pixelformat, const uns
             desc = description + (" " + Withrobot::to_string<double>(fps) + " fps");
             valid_ratio_list[desc] = v4l2_s.frmivalenum;
 
-            DBG_PRINTF("Discrete: %.2f fps", fps);
+            ROS_DEBUG("Discrete: %.2f fps", fps);
             break;
 
         case V4L2_FRMIVAL_TYPE_CONTINUOUS:
-            DBG_PRINTF("Continuous");
+            ROS_DEBUG("Continuous");
             break;
 
         case V4L2_FRMIVAL_TYPE_STEPWISE:
-            DBG_PRINTF("Stepwise step (max/min): %.2f (%.2f / %.2f) fps",
+            ROS_DEBUG("Stepwise step (max/min): %.2f (%.2f / %.2f) fps",
                     1.0 / ((double)v4l2_s.frmivalenum.stepwise.step.numerator / (double)v4l2_s.frmivalenum.stepwise.step.denominator),
                     1.0 / ((double)v4l2_s.frmivalenum.stepwise.max.numerator / (double)v4l2_s.frmivalenum.stepwise.max.denominator),
                     1.0 / ((double)v4l2_s.frmivalenum.stepwise.min.numerator / (double)v4l2_s.frmivalenum.stepwise.min.denominator));
             break;
 
         default:
-            DBG_PRINTF("ERROR: Invalid VIDIOC_ENUM_FRAMEINTERVALS");
+            ROS_DEBUG("ERROR: Invalid VIDIOC_ENUM_FRAMEINTERVALS");
             exit(EXIT_FAILURE);
         }
 
@@ -395,7 +356,7 @@ bool Camera::enumerate_frame_intervals(const unsigned int pixelformat, const uns
  */
 int Camera::enumerate_controls()
 {
-    DBG_PRINTF("---- Valid control lists ----");
+    ROS_DEBUG("---- Valid control lists ----");
     memset(&v4l2_s.queryctrl, 0, sizeof(v4l2_s.queryctrl));
     v4l2_s.queryctrl.id = V4L2_CTRL_CLASS_USER | V4L2_CTRL_FLAG_NEXT_CTRL;
 
@@ -403,7 +364,7 @@ int Camera::enumerate_controls()
         if (v4l2_s.queryctrl.flags & V4L2_CTRL_FLAG_DISABLED)
             continue;
 
-        DBG_PRINTF ("id: 0x%X, %s, flags: %d", v4l2_s.queryctrl.id, v4l2_s.queryctrl.name, v4l2_s.queryctrl.flags);
+        ROS_DEBUG ("id: 0x%X, %s, flags: %d", v4l2_s.queryctrl.id, v4l2_s.queryctrl.name, v4l2_s.queryctrl.flags);
         valid_control_list[(const char*)v4l2_s.queryctrl.name] = v4l2_s.queryctrl;
 
         if (v4l2_s.queryctrl.type == V4L2_CTRL_TYPE_MENU) {
@@ -414,7 +375,7 @@ int Camera::enumerate_controls()
     }
 
     if (errno != EINVAL) {
-        DBG_PERROR("VIDIOC_QUERYCTRL");
+        ROS_ERROR("VIDIOC_QUERYCTRL");
         return -1;
     }
 
@@ -427,16 +388,16 @@ int Camera::enumerate_controls()
  */
 int Camera::enumerate_control_menu()
 {
-    DBG_PRINTF("Menu items:");
+    ROS_DEBUG("Menu items:");
 
     memset(&v4l2_s.querymenu, 0, sizeof(v4l2_s.querymenu));
     v4l2_s.querymenu.id = v4l2_s.queryctrl.id;
 
     for (v4l2_s.querymenu.index = v4l2_s.queryctrl.minimum; (int)v4l2_s.querymenu.index <= v4l2_s.queryctrl.maximum; v4l2_s.querymenu.index++) {
         if (xioctl(VIDIOC_QUERYMENU, &v4l2_s.querymenu) == 0) {
-            DBG_PRINTF ("id: %s, 0x%X, %s", v4l2_s.queryctrl.name, v4l2_s.querymenu.index, v4l2_s.querymenu.name);
+            ROS_DEBUG ("id: %s, 0x%X, %s", v4l2_s.queryctrl.name, v4l2_s.querymenu.index, v4l2_s.querymenu.name);
         } else {
-            DBG_PERROR ("VIDIOC_QUERYMENU");
+            ROS_ERROR ("VIDIOC_QUERYMENU");
         }
     }
 
@@ -465,14 +426,14 @@ bool Camera::start()
         v4l2_s.buffer.memory = V4L2_MEMORY_MMAP;
         v4l2_s.buffer.index = i;
         if (xioctl(VIDIOC_QBUF, &v4l2_s.buffer) == -1) {
-            DBG_PERROR("VIDIOC_QBUF");
+            ROS_ERROR("VIDIOC_QBUF");
             return false;
         }
     }
 
     v4l2_s.buf_type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     if (xioctl(VIDIOC_STREAMON, &v4l2_s.buf_type) == -1) {
-        DBG_PERROR("VIDIOC_STREAMON");
+        ROS_ERROR("VIDIOC_STREAMON");
         return false;
     }
 
@@ -495,7 +456,7 @@ bool Camera::stop()
 
     v4l2_s.buf_type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     if (xioctl(VIDIOC_STREAMOFF, &v4l2_s.buf_type) == -1) {
-        DBG_PERROR("VIDIOC_STREAMOFF");
+        ROS_ERROR("VIDIOC_STREAMOFF");
         return false;
     }
 
@@ -520,7 +481,7 @@ int Camera::get_frame(unsigned char* out_buffer, const unsigned int size, unsign
     int r = select(fd+1, &fds, NULL, NULL, &timeout);
 
     if (r == -1) {
-        DBG_PERROR("Timeout");
+        ROS_ERROR("Timeout");
         exit(EXIT_FAILURE);
     }
 
@@ -606,7 +567,7 @@ int Camera::valid_controls(std::vector<std::pair<const char*, unsigned int> >& l
         }
     }
     catch (...) {
-        DBG_PERROR("--error-- valid_control_list");
+        ROS_ERROR("--error-- valid_control_list");
         return -1;
     }
 
@@ -624,7 +585,7 @@ bool Camera::get_control(camera_control& ctrl)
 {
     memset(&v4l2_s.queryctrl, 0, sizeof(v4l2_s.queryctrl));
 
-    if (ctrl.name.empty()) {
+    if (!ctrl.name) {
         return false;
     }
 
@@ -636,7 +597,7 @@ bool Camera::get_control(camera_control& ctrl)
     v4l2_s.queryctrl.id = valid_control_list[ctrl.name].id;
 
     if (xioctl(VIDIOC_QUERYCTRL, &v4l2_s.queryctrl) == -1) {
-        DBG_PERROR("VIDIOC_QUREYCTRL");
+        ROS_ERROR("VIDIOC_QUREYCTRL");
         return false;
     }
 
@@ -646,14 +607,13 @@ bool Camera::get_control(camera_control& ctrl)
     control.id = v4l2_s.queryctrl.id;
 
     if (xioctl(VIDIOC_G_CTRL, &control) == -1) {
-        DBG_PERROR("VIDIOC_G_CTRL");
+        ROS_ERROR("VIDIOC_G_CTRL");
         return false;
     }
 
     memset(&ctrl, 0, sizeof(camera_control));
 
-    //strcpy(ctrl.name, (const char*)v4l2_s.queryctrl.name);
-    ctrl.name           = (const char*)v4l2_s.queryctrl.name;
+    strcpy(ctrl.name, (const char*)v4l2_s.queryctrl.name);
     ctrl.id             = v4l2_s.queryctrl.id;
     ctrl.step           = v4l2_s.queryctrl.step;
     ctrl.type           = v4l2_s.queryctrl.type;
@@ -663,7 +623,7 @@ bool Camera::get_control(camera_control& ctrl)
     ctrl.default_value  = v4l2_s.queryctrl.default_value;
     ctrl.value          = control.value;
 
-    ctrl.dbg_print();
+    //ctrl.dbg_print();
 
     /* control type: menu */
     if (v4l2_s.queryctrl.type == CAM_CTRL_TYPE_MENU) {
@@ -675,31 +635,12 @@ bool Camera::get_control(camera_control& ctrl)
                 m.value = v4l2_s.querymenu.value;
                 ctrl.menu_list.push_back(m);
             } else {
-                DBG_PERROR ("VIDIOC_QUERYMENU");
+                ROS_ERROR ("VIDIOC_QUERYMENU");
             }
         }
     }
 
     return true;
-}
-
-/**
- * 장치의 현재 제어값을 가져오는 함수
- * @param name      [입력] 제어 이름 문자열
- * @return          [출력] 현재 값 (정수), 실패 또는 오류시 -1
- */
-int Camera::get_control(const char* name)
-{
-    camera_control ctrl;
-    ctrl.name = name;
-    bool res = get_control(ctrl);
-    if (res) {
-        return ctrl.value;
-    }
-    else {
-        printf("Invalid control name: %s\n", name);
-        return -1;
-    }
 }
 
 /**
@@ -723,13 +664,16 @@ bool Camera::set_control(const char* name, const int value)
     control.id = it->second.id;
     control.value = value;
 
+    ROS_DEBUG("name: %s, value: %d", name, value);
+
     if (xioctl(VIDIOC_S_CTRL, &control) == -1 && errno != ERANGE) {
-        DBG_PERROR("VIDIOC_S_CTRL");
+        ROS_ERROR("VIDIOC_S_CTRL");
         return false;
     }
 
     return true;
 }
+
 
 /**
  * 장치에서 현재 포멧 상태를 가져오는 함수
@@ -740,18 +684,18 @@ bool Camera::get_current_format()
     memset(&v4l2_s.format, 0, sizeof(v4l2_s.format));
     v4l2_s.format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     if (xioctl(VIDIOC_G_FMT, &v4l2_s.format.type) == -1) {
-        DBG_PERROR("VIDIOC_G_FMT");
+        ROS_ERROR("VIDIOC_G_FMT");
         return false;
     }
 
     memset(&v4l2_s.streamparm, 0, sizeof(v4l2_s.streamparm));
     v4l2_s.streamparm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     if (xioctl(VIDIOC_G_PARM, &v4l2_s.streamparm) == -1) {
-        DBG_PERROR("VIDIOC_G_PARM");
+        ROS_ERROR("VIDIOC_G_PARM");
         return false;
     }
 
-    DBG_PRINTF("V4L2_CAP_TIMEPERFRAME : %s", (v4l2_s.streamparm.parm.capture.capability & V4L2_CAP_TIMEPERFRAME) ? "True" : "False");
+    ROS_DEBUG("V4L2_CAP_TIMEPERFRAME : %s", (v4l2_s.streamparm.parm.capture.capability & V4L2_CAP_TIMEPERFRAME) ? "True" : "False");
 
     return true;
 }
@@ -773,7 +717,7 @@ bool Camera::get_current_format(camera_format& fmt)
     fmt.rate_denominator = v4l2_s.streamparm.parm.capture.timeperframe.denominator;
     fmt.frame_rate = ((double)fmt.rate_denominator) / ((double)fmt.rate_numerator);
 
-    fmt.dbg_print();
+    fmt.print();
 
     return res;
 }
@@ -797,7 +741,7 @@ bool Camera::set_format(unsigned int width, unsigned int height, unsigned int pi
     v4l2_s.format.fmt.pix.pixelformat = pixelformat;
     v4l2_s.format.fmt.pix.field = V4L2_FIELD_NONE;
     if (xioctl(VIDIOC_S_FMT, &v4l2_s.format) == -1) {
-        DBG_PERROR("VIDIOC_S_FMT");
+        ROS_ERROR("VIDIOC_S_FMT");
         return false;
     }
 
@@ -810,7 +754,7 @@ bool Camera::set_format(unsigned int width, unsigned int height, unsigned int pi
     v4l2_s.streamparm.parm.capture.timeperframe.numerator = rate_numerator;
     v4l2_s.streamparm.parm.capture.timeperframe.denominator = rate_denomonator;
     if (xioctl(VIDIOC_S_PARM, &v4l2_s.streamparm) == -1) {
-        DBG_PERROR("VIDIOC_S_PARM");
+        ROS_ERROR("VIDIOC_S_PARM");
         return false;
     }
 
@@ -851,7 +795,7 @@ int Camera::get_buffer(unsigned char* buffer, const unsigned int size)
     v4l2_s.buffer.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     v4l2_s.buffer.memory = V4L2_MEMORY_MMAP;
     if (xioctl(VIDIOC_DQBUF, &v4l2_s.buffer) == -1) {
-        DBG_PERROR("VIDIOC_DQBUF");
+        ROS_ERROR("VIDIOC_DQBUF");
         return retval;
     }
 
@@ -860,11 +804,11 @@ int Camera::get_buffer(unsigned char* buffer, const unsigned int size)
         memcpy(buffer, buffers[v4l2_s.buffer.index].buffer, v4l2_s.buffer.bytesused);
     }
     else {
-        DBG_PRINTF("Warning :: Different buffer size. v4l2: %d, User: %d", v4l2_s.buffer.bytesused, size);
+        ROS_DEBUG("Warning :: Different buffer size. v4l2: %d, User: %d", v4l2_s.buffer.bytesused, size);
     }
 
     if (xioctl(VIDIOC_QBUF, &v4l2_s.buffer) == -1) {
-        DBG_PERROR("VIDIOC_QBUF");
+        ROS_ERROR("VIDIOC_QBUF");
         return retval;
     }
 
@@ -893,9 +837,7 @@ int Camera::xioctl(int IOCTL_X, void *arg)
     }
     while (ret && tries-- && ((errno == EINTR) || (errno == EAGAIN) || (errno == ETIMEDOUT)));
 
-    if (ret && (tries <= 0)) {
-        DBG_PRINTF("V4L2_CORE: ioctl (%i) retried %i times - giving up: %s)", IOCTL_X, WITHROBOT_CAMERA_IOCTL_RETRY, strerror(errno));
-    }
+    if (ret && (tries <= 0)) ROS_DEBUG("V4L2_CORE: ioctl (%i) retried %i times - giving up: %s)", IOCTL_X, WITHROBOT_CAMERA_IOCTL_RETRY, strerror(errno));
 
     return (ret);
 }
