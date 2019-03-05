@@ -21,7 +21,8 @@ private:
   ros::NodeHandle nh_private_;
 
   image_transport::ImageTransport it_;
-  image_transport::CameraPublisher image_pub_;
+  image_transport::Publisher image_pub_;
+  ros::Publisher cam_info_pub_;
 
   sensor_msgs::CameraInfo info_;
   camera_info_manager::CameraInfoManager info_manager_;

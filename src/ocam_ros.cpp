@@ -11,6 +11,7 @@ oCam_ROS::oCam_ROS() :
   /*
    * Initialize ROS parameters
    */
+    int start_exposure, start_brightness;
   nh_private_.param<std::string>("device_path", device_path_, "/dev/video0");
   nh_private_.param<int>("width", width_, 640);
   nh_private_.param<int>("height", height_, 480);
@@ -19,7 +20,7 @@ oCam_ROS::oCam_ROS() :
   nh_private_.param<std::string>("frame_id", frame_id_, "ocam");
   nh_private_.param<bool>("show_image", show_image_, false);
   nh_private_.param<bool>("rescale_camera_info", rescale_camera_info_, false);
-  nh_private_.param<bool>("auto_exposure", auto_exposure_, true);
+  nh_private_.param<bool>("auto_exposure", auto_exposure_, false);
   nh_private_.param<bool>("color", color_, false);
   
   /*
@@ -37,7 +38,8 @@ oCam_ROS::oCam_ROS() :
   /*
    * Initialize publishers
    */
-  image_pub_ = it_.advertiseCamera(image_topic_, 1);  
+  image_pub_ = it_.advertise(image_topic_, 1);
+  cam_info_pub_ = nh_.advertise<sensor_msgs::CameraInfo>(image_topic_ + "/camera_info", 1);
   
   /*
    * Configure the Camera
@@ -155,7 +157,7 @@ oCam_ROS::oCam_ROS() :
     }
     
     /* Automatically adjust exposure */
-    if (auto_exposure_ && (++auto_exposure_count_ % (fps_/10)) == 0)
+    if (auto_exposure_ && (++auto_exposure_count_ % (fps_/80)) == 0)
     {
       auto_exposure_count_ = 0;
       // secant method for finding exposure at target intensity
@@ -218,7 +220,8 @@ oCam_ROS::oCam_ROS() :
     info_.header.frame_id = frame_id_;   
     
     /* Publish ROS messages */
-    image_pub_.publish(*msg, info_);
+    image_pub_.publish(*msg);
+    cam_info_pub_.publish(info_);
     
     ros::spinOnce(); // updates the ros::ok()
     
