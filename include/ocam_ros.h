@@ -17,15 +17,21 @@ public:
 
 private:
   Withrobot::Camera* camera_;
+  Withrobot::camera_format camFormat_;
+  ros::Time now_;
+
   ros::NodeHandle nh_;
   ros::NodeHandle nh_private_;
 
   image_transport::ImageTransport it_;
-  image_transport::Publisher image_pub_;
-  ros::Publisher cam_info_pub_;
+  image_transport::CameraPublisher image_pub_;
 
+  std::string cam_info_url_;
   sensor_msgs::CameraInfo info_;
   camera_info_manager::CameraInfoManager info_manager_;
+
+  cv::Mat* srcImg;
+  cv::Mat* dstImg;
 
   int width_;
   int height_;
@@ -38,7 +44,16 @@ private:
   bool rescale_camera_info_;
   bool auto_exposure_;
   bool color_;
+  int exposure_;
+  int brightness_;
   int auto_exposure_count_ = 0;
 
+  void initROS();
+  void initCamera();
+  void initCV();
+  void autoExposure();
+  void updateCamInfo();
+  void showImage();
+  void run();
   void rescaleCameraInfo(int width, int height);
 };
