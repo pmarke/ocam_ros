@@ -312,7 +312,7 @@ namespace Withrobot {
 
         Mutex mutex;
 
-    private:
+    public:
         bool get_capability();
         bool get_current_format();
 

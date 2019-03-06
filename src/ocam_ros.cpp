@@ -11,6 +11,7 @@ oCam_ROS::oCam_ROS() :
     initROS();
     initCamera();
     initCV();
+    camera_->enumerate_controls();
 
     run();
 }
@@ -45,8 +46,8 @@ void oCam_ROS::run()
         }
         cv::cvtColor(*srcImg, *dstImg, (color_ ? cv::COLOR_BayerGB2BGR : cv::COLOR_BayerGB2GRAY));
 
-        if (auto_exposure_)
-            autoExposure();
+//        if (auto_exposure_)
+//            autoExposure();
         if (show_image_)
             showImage();
 
@@ -69,7 +70,7 @@ void oCam_ROS::initROS()
     nh_private_.param<std::string>("device_path", device_path_, "/dev/video0");
     nh_private_.param<int>("width", width_, 640);
     nh_private_.param<int>("height", height_, 480);
-    nh_private_.param<int>("fps", fps_, 80);
+    nh_private_.param<int>("fps", fps_, 100);
     nh_private_.param<std::string>("image_topic", image_topic_, "image");
     nh_private_.param<std::string>("frame_id", frame_id_, "ocam");
     nh_private_.param<std::string>("camera_info_url", cam_info_url_);
@@ -77,14 +78,18 @@ void oCam_ROS::initROS()
     nh_private_.param<bool>("rescale_camera_info", rescale_camera_info_, false);
     nh_private_.param<bool>("auto_exposure", auto_exposure_, false);
     nh_private_.param<bool>("color", color_, false);
-    brightness_ *= (int)nh_private_.getParam("brightness", brightness_);
-    exposure_ *= (int)nh_private_.getParam("exposure", exposure_);
+    nh_private_.param<int>("wb_red", wb_red_, 125);
+    nh_private_.param<int>("wb_blue", wb_blue_, 125);
+    nh_private_.param<int>("exposure", exposure_, 100);
+    nh_private_.param<int>("brightness", brightness_, 200);
 
-    ROS_INFO_STREAM("Auto Exposure: " << (auto_exposure_ ? "on" : "off"));
     ROS_INFO_STREAM("Rescale Camera Info: " << (rescale_camera_info_ ? "on" : "off"));
+    ROS_INFO_STREAM("Auto Exposure: " << (auto_exposure_ ? "on" : "off"));
     ROS_INFO_STREAM("Color: " << (color_ ? "on" : "off"));
     ROS_INFO_STREAM("brightness: " << brightness_);
     ROS_INFO_STREAM("exposure: " << exposure_);
+    ROS_INFO_STREAM("wb_red: " << wb_red_);
+    ROS_INFO_STREAM("wb_blue: " << wb_blue_);
 
     image_pub_ = it_.advertiseCamera(image_topic_, 1);
 }
@@ -96,12 +101,13 @@ void oCam_ROS::initCamera()
 //    camera_->set_format(width_, height_, Withrobot::fourcc_to_pixformat('R', 'G', 'B', ' '), 1, fps_);
     camera_->get_current_format(camFormat_);
 
-    if (brightness_ != 0)
-        camera_->set_control("Brightness", brightness_);
-    if (exposure_ != 0)
-        camera_->set_control("Exposure (Absolute)", brightness_);
+    camera_->set_control("Gain", brightness_);
+    camera_->set_control("Exposure (Absolute)", exposure_);
+    camera_->set_control("Exposure Auto", auto_exposure_);
+    camera_->set_control("White Balance Red Component", wb_red_);
+    camera_->set_control("White Balance Blue Component", wb_blue_);
 
-    brightness_ = camera_->get_control("Brightness");
+    brightness_ = camera_->get_control("Gain");
     exposure_ = camera_->get_control("Exposure (Absolute)");
 
     std::string camName = camera_->get_dev_name();
@@ -143,6 +149,11 @@ void oCam_ROS::initCV()
         ROS_INFO("Increase exposure: ]");
         ROS_INFO("Decrease brightness: -");
         ROS_INFO("Increase brightness: =");
+        ROS_INFO("Decrease WB Red: 1");
+        ROS_INFO("Increase WB Red: 2");
+        ROS_INFO("Decrease WB Blue: 3");
+        ROS_INFO("Increase WB Blue: 4");
+        ROS_INFO("Toggle Auto Exposure: e");
         ROS_INFO("<---------------------------------->");
     }
 }
@@ -258,17 +269,51 @@ void oCam_ROS::showImage()
         case '-':
             if (brightness_ > 0)
             {
-                camera_->set_control("Brightness", --brightness_);
+                camera_->set_control("Gain", --brightness_);
                 std::cout << "oCam brightness: " << brightness_ << "\n";
             }
             break;
 
         case '=':
-            if (brightness_ < 127)
+            if (brightness_ < 250)
             {
-                camera_->set_control("Brightness", ++brightness_);
+                camera_->set_control("Gain", ++brightness_);
                 std::cout << "oCam brightness: " << brightness_ << "\n";
             }
+            break;
+        case '1':
+            if (wb_red_ < 250)
+            {
+                camera_->set_control("White Balance Red Component", ++wb_red_);
+                std::cout << "oCam wb red: " << wb_red_ << "\n";
+            }
+            break;
+        case '2':
+            if (wb_red_ > 0)
+            {
+                camera_->set_control("White Balance Red Component", --wb_red_);
+                std::cout << "oCam wb red: " << wb_red_ << "\n";
+            }
+            break;
+        case '3':
+            if (wb_blue_ < 250)
+            {
+                camera_->set_control("White Balance Blue Component", ++wb_blue_);
+                std::cout << "oCam wb blue: " << wb_blue_ << "\n";
+            }
+            break;
+        case '4':
+            if (wb_blue_ > 0)
+            {
+                camera_->set_control("White Balance Blue Component", --wb_blue_);
+                std::cout << "oCam wb blue: " << wb_blue_ << "\n";
+            }
+            break;
+
+        case 'e':
+            auto_exposure_ = !auto_exposure_;
+            camera_->set_control("Exposure, Auto", auto_exposure_);
+            std::cout << "oCam auto exposure: " << (auto_exposure_ ? "enabled" : "disabled") << std::endl;
             break;
 
         default:

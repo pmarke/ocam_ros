@@ -44,8 +44,12 @@ private:
   bool rescale_camera_info_;
   bool auto_exposure_;
   bool color_;
+
   int exposure_;
   int brightness_;
+  int wb_red_;
+  int wb_blue_;
+
   int auto_exposure_count_ = 0;
 
   void initROS();

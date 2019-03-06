@@ -403,7 +403,7 @@ int Camera::enumerate_controls()
         if (v4l2_s.queryctrl.flags & V4L2_CTRL_FLAG_DISABLED)
             continue;
 
-        DBG_PRINTF ("id: 0x%X, %s, flags: %d", v4l2_s.queryctrl.id, v4l2_s.queryctrl.name, v4l2_s.queryctrl.flags);
+        printf ("id: 0x%X, %s, flags: %d", v4l2_s.queryctrl.id, v4l2_s.queryctrl.name, v4l2_s.queryctrl.flags);
         valid_control_list[(const char*)v4l2_s.queryctrl.name] = v4l2_s.queryctrl;
 
         if (v4l2_s.queryctrl.type == V4L2_CTRL_TYPE_MENU) {

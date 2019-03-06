@@ -4,6 +4,9 @@ A ROS wrapper for the OCAM Global Shutter Camera
 
 This is basically a ROS wrapper around the withrobot [opencv examples](http://withrobot.com/en/camera/ocam-1cgn-u/?ckattempt=1). It has been tested primarily with the 1CGN-U color global shutter camera, but will likely work with the mono version 1MGN-U
 
+## Important
+We have had issues with different versions of the oCam firmware.  The last known working firmware is the [1CGN-U_R1803_180404.img](https://github.com/withrobot/oCam/blob/master/Firmware/oCam-1CGN-U_R1803_180404.img).  Please update (or roll back) your firmware to this version.
+
 ## Functionality
 - Display Image and publish to ROS network
 - Use the `~show_image` parameter to adjust brightness and exposure on the fly with keyboard shortcuts (similar to oCam linux examples).
