@@ -73,7 +73,7 @@ void oCam_ROS::initROS()
     nh_private_.param<int>("fps", fps_, 100);
     nh_private_.param<std::string>("image_topic", image_topic_, "image");
     nh_private_.param<std::string>("frame_id", frame_id_, "ocam");
-    nh_private_.param<std::string>("camera_info_url", cam_info_url_);
+    nh_private_.param<std::string>("camera_info_url", cam_info_url_, "");
     nh_private_.param<bool>("show_image", show_image_, false);
     nh_private_.param<bool>("rescale_camera_info", rescale_camera_info_, false);
     nh_private_.param<bool>("auto_exposure", auto_exposure_, false);
