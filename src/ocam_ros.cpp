@@ -141,7 +141,12 @@ void oCam_ROS::initCV()
 
     if (show_image_)
     {
-        cv::namedWindow("oCam ROS", CV_WINDOW_KEEPRATIO|CV_WINDOW_AUTOSIZE);
+#if  CV_MAJOR_VERSION >=4
+    cv::namedWindow("oCam ROS", cv::WINDOW_KEEPRATIO|cv::WINDOW_AUTOSIZE);
+#else
+    cv::namedWindow("oCam ROS", CV_WINDOW_KEEPRATIO|CV_WINDOW_AUTOSIZE);
+#endif
+        
 
         ROS_INFO("<--------- oCam Adjustment -------->");
         ROS_INFO("Quit adjustment and image view: q");

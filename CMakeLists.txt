@@ -10,9 +10,16 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
 )
 find_package(Threads)
+find_package(OpenCV 4)
 find_package(OpenCV REQUIRED)
 find_package(udev)
 find_package(v4l2)
+
+if(${OpenCV_VERSION_MAJOR} LESS 4)
+    set (OPEN_CV_4 0)
+else()
+    set (OPEN_CV_4 1)
+endif()
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11 -fms-extensions -O3 -Wl,--no-as-needed")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -fms-extensions -O3 -Wl,--no-as-needed")
